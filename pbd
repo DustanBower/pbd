@@ -1,0 +1,198 @@
+#!/usr/bin/env python2
+
+## This file is part of pbd.
+##
+## Copyright (c) 2011 Dustan Bower.
+##
+## pbd is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 2 of the License, or
+## (at your option) any later version.
+##
+## pbd is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with pbd.  If not, see <http://www.gnu.org/licenses/>.
+
+import os
+import sys
+
+DEFAULT_TIMEOUT = 5000
+
+inputs = (
+    ('?', 'show current song'),
+    ('n', 'next song'),
+    ('s', 'change station'),
+    ('p', 'pause'),
+    ('+', 'love song'),
+    ('-', 'ban song'),
+    ('t', 'tired of this song'),
+    ('q', 'quit'),
+    (':help', 'Show help message')
+)
+
+def check_running():
+    import subprocess
+    try:
+        pid = subprocess.check_output("pgrep pianobar", shell=True)
+    except subprocess.CalledProcessError:
+        startup()
+        return False
+
+    return True
+
+def startup():
+    os.system("screen -D -m pianobar &")
+    file = open("/tmp/pbd.tmp", 'w')
+    file.close()
+    pbprint("And we go...")
+
+def load_data():
+    file = open("/tmp/pbd.tmp", 'r')
+    input = file.read()
+    file.close()
+    data = dict([x.split('=', 1) for x in input.split('\n') if x])
+    return data
+    
+def prompt_station():
+    import re
+
+    stations = []
+    highest = 0
+    regex = re.compile(r"station[0-9]")
+    data = load_data()
+    for e in data.keys():
+        if regex.match(e):
+            stations.append(e)
+            if int(e[7::]) > highest:
+                highest = int(e[7::])
+
+    known_inputs = ""
+    for e in range(0, highest + 1):
+        known_inputs += "%s) %s\n" % (e, data["station%d" % e])
+        
+    input = pbprompt(known_inputs, prompt="(station) ")
+    return input
+
+def pbprompt(known_inputs, prompt="", delay=0.5):
+    import subprocess
+    import time
+    time.sleep(delay)
+    # triple quotes won't work here.  If the quotes aren't escaped, they
+    # don't function properly.
+    (BLACK, GREEN) = ("#000000", "#00EE00")
+    string = "dmenu -b "
+    string += "-nb \"%s\" -nf \"%s\" " % (BLACK, GREEN)
+    string += "-sb \"%s\" -sf \"%s\" " % (GREEN, BLACK)
+    string += "-p \"pbd: %s\" <<< \"%s\"" % (prompt, known_inputs)
+    input = subprocess.check_output(string, shell=True).strip()
+    return input
+
+def pbprint(input, title="", timeout=DEFAULT_TIMEOUT):
+    string = "notify-send "
+    if timeout:
+       string += "-t %d " % timeout 
+    string += "\"pbd: %s\" " % title
+    # Against all reason, & refuses to print, quoted or otherwise.
+    # replacing it for now.
+    string += "\"%s\"" % str(input.replace('&', 'and'))
+    os.system(string)
+
+def show_no_dash_args():
+    """
+    Called from the command line with -h or --help.
+
+    """
+    string = """To avoid confusion with - and accidentally disliking songs, \
+pbd does not support options beginning with \"-\".  Options \
+are prefixed with : instead.
+Showing 'pbd :help'."""
+    pbprint(string, timeout=10000)
+    show_help()
+
+def show_help():
+    """
+
+    """
+    
+    string = ""
+    option = False
+    for e in inputs:
+        seperator = ": " if e[0][0] != ":" else "     "
+        new_line =  "%s%s%s\n" % (e[0], seperator, e[1])
+        # Seperate options by linefeed.
+        if new_line[0] == ":":
+            if not option:
+                option = True
+                string += "\n"
+        string += new_line
+
+    pbprint(string, timeout=10000)
+
+def pbd():
+    if not check_running():
+        return
+
+    try:
+        input = sys.argv[1].strip()
+    except IndexError:
+        input = None
+
+    # Called with no input, prompt for input
+    if not input:
+        known_inputs = "\n".join([x[0] + " " for x in inputs])
+        known_inputs.strip()
+        input = pbprompt(known_inputs, delay=0)
+    elif input[0] == '-':
+        show_no_dash_args()
+        return
+
+    if input == "s":
+        input = ":station"
+    elif input[0] == "s":
+        import re
+        regex = re.compile(r"s[0-9]")
+        if regex.match(input):
+            os.system("echo '%s' > ~/.config/pianobar/ctl" % input+'\n')
+        return
+        
+    try:
+        initial_character = input[0]
+    except IndexError:
+        initial_character = input = "?"
+
+    if initial_character not in [':', '?']:
+        if input == "q":
+            pbprint("And we go...")
+        os.system("echo -n '%s' > ~/.config/pianobar/ctl" % input)
+    elif initial_character == ":":
+        # parse args
+        if input == ":help":
+            show_help()
+        if input == ":station":
+            station_number = None
+            station = prompt_station()
+            try:
+                station_number = station.split(")", 1)[0]
+            except AttributeError:
+                pass
+            print(station, station_number)
+            os.system("echo '%s' > ~/.config/pianobar/ctl" %
+                      ("s"+str(station_number)))
+            return
+    else:
+        data = load_data()
+        try:
+            argument = input[1::]
+        except IndexError:
+            argument = None
+
+        if not argument or initial_character == "?":
+            pbprint("%s - %s" % (data['artist'], data['title']), title="[%s]" %
+                    data['stationName'])
+
+if __name__ == "__main__":
+    pbd()
