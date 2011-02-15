@@ -30,6 +30,16 @@ password = <your password>
 autostart_station = <pick one (this may change)>
 event_command = <location of pbevent script>
 
+INSTALLATION:
+
+with root permissions:
+
+python setup.py install
+
+
+
+USAGE:
+
 If invoked without parameters, pbd will:
 
 1) Activate pianobar, if it is not running.
