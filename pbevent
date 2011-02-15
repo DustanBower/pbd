@@ -37,17 +37,18 @@ if debug:
     print("'%s'" % (data['event']))
 
 if data['event'] in ["songstart", "songexplain"]:
-#    os.system("notify-send -t 5000 \"pbd: [%s]\" \"%s - %s\"" % (data['stationName'], data['artist'], data['title']))
+    pb.display("%s - %s" % (data['artist'], data['title']),
+            heading="[%s]" % data['stationName'])
 
 if data['event'] == "songban":
-    os.system("notify-send -t 5000 \"pbd: [%s]\" \"Banning song: [%s - %s]\""
-              % (data['stationName'], data['artist'], data['title']))
+    pb.display("Banning song: [%s - %s]" % (data['artist'], data['title']),
+               heading="[%s]" % data['stationName'])
 
 if data['event'] == "songlove":
-    os.system("notify-send -t 5000 \"pbd: [%s]\" \"Loving song: [%s - %s]\""
-              % (data['stationName'], data['artist'], data['title']))
+    pb.display("Loving song: [%s - %s]" % (data['artist'], data['title']),
+               heading="[%s]" % data['stationName'])
 
 if data['event'] == "songshelf":
-    os.system("notify-send -t 5000 \"pbd: [%s]\" \"Shelving song: [%s - %s]\""
-              % (data['stationName'], data['artist'], data['title']))
+    pb.display("Shelving song: [%s - %s]" % (data['artist'], data['title']),
+               heading="[%s]" % data['stationName')
 
