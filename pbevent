@@ -23,7 +23,7 @@ import sys
 
 import pb
 
-debug = True
+debug = False
 
 input = "event=%s\n" % sys.argv[1]
 input += "".join(sys.stdin.readlines())
