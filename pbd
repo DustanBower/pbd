@@ -22,20 +22,6 @@ import sys
 
 import pb
 
-DEFAULT_TIMEOUT = 5000
-
-inputs = (
-    ('?', 'show current song'),
-    ('n', 'next song'),
-    ('s', 'change station'),
-    ('p', 'pause'),
-    ('+', 'love song'),
-    ('-', 'ban song'),
-    ('t', 'tired of this song'),
-    ('q', 'quit'),
-    (':help', 'Show help message')
-)
-
 def check_running():
     import subprocess
     try:
@@ -93,7 +79,7 @@ def prompt(known_inputs, prompt="", delay=0.5):
     input = subprocess.check_output(string, shell=True).strip()
     return input
 
-def display(input, title="", timeout=DEFAULT_TIMEOUT):
+def display(input, title="", timeout=pb.DEFAULT_TIMEOUT):
     string = "notify-send "
     if timeout:
        string += "-t %d " % timeout 
@@ -122,7 +108,7 @@ def show_help():
     
     string = ""
     option = False
-    for e in inputs:
+    for e in pb.inputs:
         seperator = ": " if e[0][0] != ":" else "     "
         new_line =  "%s%s%s\n" % (e[0], seperator, e[1])
         # Seperate options by linefeed.
@@ -145,7 +131,7 @@ def pbd():
 
     # Called with no input, prompt for input
     if not input:
-        known_inputs = "\n".join([x[0] + " " for x in inputs])
+        known_inputs = "\n".join([x[0] + " " for x in pb.inputs])
         known_inputs.strip()
         input = prompt(known_inputs, delay=0)
     elif input[0] == '-':
