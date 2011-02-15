@@ -36,7 +36,7 @@ def startup():
     os.system("screen -D -m pianobar &")
     file = open("/tmp/pbd.tmp", 'w')
     file.close()
-    display("And we go...")
+    pb.display("And we go...")
 
 def load_data():
     file = open("/tmp/pbd.tmp", 'r')
@@ -80,6 +80,7 @@ def prompt(known_inputs, prompt="", delay=0.5):
     return input
 
 def display(input, title="", timeout=pb.DEFAULT_TIMEOUT):
+    import os
     string = "notify-send "
     if timeout:
        string += "-t %d " % timeout 
@@ -98,7 +99,7 @@ def show_no_dash_args():
 pbd does not support options beginning with \"-\".  Options \
 are prefixed with : instead.
 Showing 'pbd :help'."""
-    display(string, timeout=10000)
+    pb.display(string, timeout=10000)
     show_help()
 
 def show_help():
@@ -118,7 +119,7 @@ def show_help():
                 string += "\n"
         string += new_line
 
-    display(string, timeout=10000)
+    pb.display(string, timeout=10000)
 
 def pbd():
     if not check_running():
@@ -154,7 +155,7 @@ def pbd():
 
     if initial_character not in [':', '?']:
         if input == "q":
-            display("And we go...")
+            pb.display("And we go...")
         os.system("echo -n '%s' > ~/.config/pianobar/ctl" % input)
     elif initial_character == ":":
         # parse args
@@ -179,8 +180,8 @@ def pbd():
             argument = None
 
         if not argument or initial_character == "?":
-            display("%s - %s" % (data['artist'], data['title']), title="[%s]" %
-                    data['stationName'])
+            pb.display("%s - %s" % (data['artist'], data['title']),
+                       title="[%s]" % data['stationName'])
 
 if __name__ == "__main__":
     pbd()
