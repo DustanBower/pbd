@@ -70,6 +70,9 @@ def show_no_dash_args():
     Called from the command line with -h or --help.
 
     """
+    #FIXME: make pb.display() take an end= parameter to allow multiple
+    #FIXME: strings to be sent and concatenated until the normal end=
+    #FIXME: is received.
     string = """To avoid confusion with - and accidentally disliking songs, \
 pbd does not support options beginning with \"-\".  Options \
 are prefixed with : instead.
@@ -156,7 +159,7 @@ def pbd():
 
         if not argument or initial_character == "?":
             pb.display("%s - %s" % (data['artist'], data['title']),
-                       title="[%s]" % data['stationName'])
+                       heading="[%s]" % data['stationName'])
 
 if __name__ == "__main__":
     pbd()
