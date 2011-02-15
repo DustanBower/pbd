@@ -21,6 +21,8 @@ from copy import copy
 import os
 import sys
 
+#import pbd
+
 debug = True
 
 input = "event=%s\n" % sys.argv[1]
@@ -36,6 +38,7 @@ if debug:
 
 if data['event'] in ["songstart", "songexplain"]:
     os.system("notify-send -t 5000 \"pbd: [%s]\" \"%s - %s\"" % (data['stationName'], data['artist'], data['title']))
+#    pbd.show("notify-send -t 5000 \"pbd: [%s]\" \"%s - %s\"" % (data['stationName'], data['artist'], data['title']))
 
 if data['event'] == "songban":
     os.system("notify-send -t 5000 \"pbd: [%s]\" \"Banning song: [%s - %s]\""
