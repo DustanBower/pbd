@@ -1,0 +1,5 @@
+pbd 0.1.0
+---------
+    - Most of pianobar's features aren't supported at present.  pbd
+        should be expanded to support more of these.  This will
+	likely require changes to pianobar, however.

@@ -1,0 +1,71 @@
+pbd is a small set of scripts for daemonizing pianobar.
+
+pbd requires:
+
+1) python
+2) pianobar
+3) screen
+4) notifier-daemon
+5) dmenu
+
+
+pbd also requires pianobar configuration:
+
+keybindings:
+
+pbd expects the default keybindings.  If they have been changed,
+undefined behavior may result.  pbd has to intercept certain
+commands to make them work properly ('s' is a prime example)
+
+The "?" is command is intercepted by pbd, and displays the current
+station, artist, and song title.
+
+.config/pianobar/ctl must exist:
+
+$ mkfifo ~/.config/pianobar/ctl
+
+.config/pianobar/config should contain:
+user = <your user name>
+password = <your password>
+autostart_station = <pick one (this may change)>
+event_command = <location of pbevent script>
+
+If invoked without parameters, pbd will:
+
+1) Activate pianobar, if it is not running.
+2) prompt the user for input via dmenu
+
+pbd can be invoked with options too, for further flexibility:
+
+"pbd s1" should load the appropriate station without prompting.
+(only station numbers will work in this way, however)
+
+type or select ":help" (or invoke pbd with the :help parameter) to see a help
+display.   pbd doesn't use - or -- options to avoid confusion with - and
+accidentally banning songs.
+
+
+pbd is intended to be bound to a key for invocation.  On my system, I use
+mod+m (m for Music).  An example of usage:
+
+mod+m (to start)
+mod+m (dmenu:)+<enter> (love song)
+mod+m (dmenu:)n<enter> (next song)
+mod+m (dmenu:)-<enter> (ban song)
+mod+m (dmenu:)s<enter>(dmenu:)In Flames<enter>
+
+dmenu supports infix matching, so selecting station "6) In Flames" can be
+accomplished by typing "6", "In", "Flames", etc.
+
+AVAILABLE COMMANDS:
+?: show current song
+n: next song
+s: change station
+p: pause
++: love song
+-: ban song
+t: tired of this song
+q: quit
+
+:help	Show help message.
+
