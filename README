@@ -28,7 +28,9 @@ $ mkfifo ~/.config/pianobar/ctl
 user = <your user name>
 password = <your password>
 autostart_station = <pick one (this may change)>
-event_command = <location of pbevent script>
+event_command = <location of pbevent script*>
+
+* (should be /usr/bin/pbevent)
 
 INSTALLATION:
 
