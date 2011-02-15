@@ -74,10 +74,10 @@ def prompt_station():
     for e in range(0, highest + 1):
         known_inputs += "%s) %s\n" % (e, data["station%d" % e])
         
-    input = pbprompt(known_inputs, prompt="(station) ")
+    input = prompt(known_inputs, prompt="(station) ")
     return input
 
-def pbprompt(known_inputs, prompt="", delay=0.5):
+def prompt(known_inputs, prompt="", delay=0.5):
     import subprocess
     import time
     time.sleep(delay)
@@ -145,7 +145,7 @@ def pbd():
     if not input:
         known_inputs = "\n".join([x[0] + " " for x in inputs])
         known_inputs.strip()
-        input = pbprompt(known_inputs, delay=0)
+        input = prompt(known_inputs, delay=0)
     elif input[0] == '-':
         show_no_dash_args()
         return
