@@ -50,5 +50,5 @@ if data['event'] == "songlove":
 
 if data['event'] == "songshelf":
     pb.display("Shelving song: [%s - %s]" % (data['artist'], data['title']),
-               heading="[%s]" % data['stationName')
+               heading="[%s]" % data['stationName'])
 
