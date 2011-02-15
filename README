@@ -5,7 +5,7 @@ pbd requires:
 1) python
 2) pianobar
 3) screen
-4) /usr/bin/notify-send (libnotify)
+4) notification-daemon
 5) dmenu
 
 
