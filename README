@@ -7,7 +7,7 @@ pbd requires:
 3) screen
 4) notification-daemon
 5) dmenu
-
+6) pgrep
 
 pbd also requires pianobar configuration:
 
