@@ -36,7 +36,17 @@ INSTALLATION:
 
 with root permissions:
 
+MAKE SURE TO USE PYTHON2
+
+<python 2.x> setup.py install
+
+on most systems, that will be:
+
 python setup.py install
+
+on arch:
+
+python2 setup.py install
 
 
 
