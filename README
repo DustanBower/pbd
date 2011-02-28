@@ -17,7 +17,7 @@ pbd expects the default keybindings.  If they have been changed,
 undefined behavior may result.  pbd has to intercept certain
 commands to make them work properly ('s' is a prime example)
 
-The "?" is command is intercepted by pbd, and displays the current
+The "?" command is intercepted by pbd, and displays the current
 station, artist, and song title.
 
 .config/pianobar/ctl must exist:
