@@ -117,6 +117,11 @@ def pbd():
         show_no_dash_args()
         return
 
+    # drop unimplemented inputs to avoid unresponsiveness
+    unimplemented = ['b', 'c', 'd', 'g', 'h', 'j', 'm', 'r', 'u', 'x']
+
+    if input in unimplemented:
+        return
     if input == "s":
         input = ":station"
     elif input[0] == "s":
