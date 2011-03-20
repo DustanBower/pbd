@@ -138,7 +138,7 @@ def pbd():
 
     if initial_character not in [':', '?']:
         if input == "q":
-            pb.display("And we go...")
+            pb.display("Our steps so silent...")
         os.system("echo -n '%s' > ~/.config/pianobar/ctl" % input)
     elif initial_character == ":":
         # parse args
