@@ -91,3 +91,25 @@ q: quit
 
 :help	Show help message.
 
+
+
+TROUBLESHOOTING
+---------------
+
+Nearly every problem I've had or heard of involving pbd is a problem with notification-daemon.  When pbd starts, little magical boxes should pop up, telling you the name of the song playing and various other nonsense.  These boxes should fade after about 5 seconds, with the exception of the help message, which shows for 10.
+
+If you're not seeing these, there is a problem with notifications not working.  Possible reasons include: notification-daemon didn't bother to start itself, in which case you can look for it in /usr/lib/notification-daemon-1.0/notification-daemon, or similar.
+
+If you've done that, and the notifications stop appearing, it's probably crashed, which can be fixed by:
+
+1) closing pbd
+2) sending notification-daemon a kill signal
+3) restarting pbd.
+4) (optional) incomprehensible angry muttering
+
+That will fix the problem for somewhere between 3 seconds and 5 minutes.
+
+Or you can just delete notification-daemon and install xfce4-notifyd, which hopefully is less fussy.
+
+
+
