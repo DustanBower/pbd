@@ -1,3 +1,8 @@
+pbd 0.1.1
+---------
+    - I really need to add another way to communicate with the user,
+        since notification daemon likes to break.  Maybe zenity?
+
 pbd 0.1.0
 ---------
     - Most of pianobar's features aren't supported at present.  pbd
