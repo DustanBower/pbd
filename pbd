@@ -33,10 +33,6 @@ def check_running():
     return True
 
 def startup():
-    # I'd really like to use subprocess for this, but it's being disagreeable.
-    # I don't think spawning a process in the background, then letting it run
-    # despite the fact that this process is closing is so much to ask!
-    os.system("/usr/lib/notification-daemon-1.0/notification-daemon &")
     os.system("screen -D -m pianobar &")
     file = open("/tmp/pbd.tmp", 'w')
     file.close()
