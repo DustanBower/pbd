@@ -9,6 +9,8 @@ pbd requires:
 5) dmenu
 6) pgrep
 
+notification-daemon must be running (possibly requiring manual spawning) in order for the user to see notifications.  xfce4-notifyd spawns itself, but doesn't look as nice.
+
 pbd also requires pianobar configuration:
 
 keybindings:
