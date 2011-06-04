@@ -5,7 +5,7 @@ pbd requires:
 1) python
 2) pianobar
 3) screen
-4) notification-daemon (or xfce4-notifyd)
+4) notification-daemon, xfce4-notifyd, or statnot
 5) dmenu
 6) pgrep
 
@@ -109,9 +109,9 @@ If you've done that, and the notifications stop appearing, it's probably crashed
 3) restarting pbd.
 4) (optional) incomprehensible angry muttering
 
-That will fix the problem for somewhere between 3 seconds and 5 minutes.
+On my system, this will fix the problem for exactly 21 messages.
 
-Or you can just delete notification-daemon and install xfce4-notifyd, which hopefully is less fussy.
+Or you can just delete notification-daemon and install xfce4-notifyd or statnot.
 
 
 
