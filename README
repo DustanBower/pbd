@@ -4,10 +4,9 @@ pbd requires:
 
 1) python
 2) pianobar
-3) screen
-4) notification-daemon, xfce4-notifyd, or statnot
-5) dmenu
-6) pgrep
+3) notification-daemon, xfce4-notifyd, or statnot
+4) dmenu
+5) pgrep
 
 notification-daemon must be running (possibly requiring manual spawning) in order for the user to see notifications.  xfce4-notifyd spawns itself, but doesn't look as nice.
 
@@ -68,6 +67,8 @@ type or select ":help" (or invoke pbd with the :help parameter) to see a help
 display.   pbd doesn't use - or -- options to avoid confusion with - and
 accidentally banning songs.
 
+Note that the original pbd process (that spawned pianobar to begin with) will not
+return until pianobar stops (i.e., pbd is quit, or errors occur)
 
 pbd is intended to be bound to a key for invocation.  On my system, I use
 mod+m (m for Music).  An example of usage:
@@ -83,6 +84,7 @@ accomplished by typing "6", "In", "Flames", etc.
 
 AVAILABLE COMMANDS:
 ?: show current song
+e: explain why this song is playing
 n: next song
 s: change station
 p: pause
@@ -92,6 +94,13 @@ t: tired of this song
 q: quit
 
 :help	Show help message.
+
+
+ENVIRONMENT VARIABLES
+---------------------
+
+PBD_MAX_LINE_LEN	Maximum length of a line pbd will display as a notification,
+			with larger lines split into smaller lines.
 
 
 

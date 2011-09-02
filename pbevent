@@ -36,7 +36,7 @@ if debug:
     print(data)
     print("'%s'" % (data['event']))
 
-if data['event'] in ["songstart", "songexplain"]:
+if data['event'] == "songstart":
     pb.display("%s - %s" % (data['artist'], data['title']),
             heading="[%s]" % data['stationName'])
 

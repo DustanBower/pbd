@@ -18,12 +18,12 @@
 ## along with pbd.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import subprocess
 import sys
 
 import pb
 
 def check_running():
-    import subprocess
     try:
         pid = subprocess.check_output("pgrep pianobar", shell=True)
     except subprocess.CalledProcessError:
@@ -33,11 +33,25 @@ def check_running():
     return True
 
 def startup():
-    os.system("screen -D -m pianobar &")
+    process = subprocess.Popen(['pianobar'],
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
     file = open("/tmp/pbd.tmp", 'w')
     file.close()
     pb.display("And we go...")
+    while True:
+        output = process.stdout.readline()
+        if not output:
+            break
+        process_pianobar_output(output)
 
+def process_pianobar_output(output):
+    display = ["Based on what", "Network error:", "Error:"]
+    for message in display:
+        substr = output.find(message)
+        if substr != -1:
+            pb.display(output[substr:])
+        
 def load_data():
     file = open("/tmp/pbd.tmp", 'r')
     input = file.read()
@@ -113,7 +127,7 @@ def pbd():
         known_inputs = "\n".join([x[0] + " " for x in pb.inputs])
         known_inputs.strip()
         input = pb.prompt(known_inputs, delay=0)
-    elif input[0] == '-':
+    elif input[0] == '-' and input not in ["-", "--"]:
         show_no_dash_args()
         return
 

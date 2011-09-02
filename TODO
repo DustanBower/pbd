@@ -1,3 +1,9 @@
+pbd 0.1.2
+---------
+    - explain works well enough, will need to see if further interaction
+    	with pianobar will allow support for more pianobar features without
+	undue headaches.
+
 pbd 0.1.1
 ---------
     - I really need to add another way to communicate with the user,
