@@ -3,3 +3,5 @@ pbd 0.1.2
 
 	-- added "explain"
 	-- screen no longer required
+	-- PBD_MAX_LINE_LEN environment variable added (default 0)
+		- (if >= 1) length at which message notifications are split
