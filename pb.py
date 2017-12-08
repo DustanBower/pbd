@@ -39,7 +39,7 @@ def display(input, heading="", timeout=DEFAULT_TIMEOUT):
     if max_line_length:
         lines = textwrap.wrap(input, max_line_length)
     else:
-        lines = list(input)
+        lines = [input]
 
     for line in lines:
         string = "notify-send "
