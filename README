@@ -8,6 +8,10 @@ pbd requires:
 4) dmenu
 5) pgrep
 
+With those installed, install requirements.txt:
+pip install -r requirements.txt
+
+
 notification-daemon must be running (possibly requiring manual spawning) in order for the user to see notifications.  xfce4-notifyd spawns itself, but doesn't look as nice.
 
 pbd also requires pianobar configuration:
@@ -31,7 +35,7 @@ password = <your password>
 autostart_station = <pick one (this may change)>
 event_command = <location of pbevent script*>
 
-* (should be /usr/bin/pbevent)
+* (should be /usr/bin/pbevent or /usr/local/bin/pbevent)
 
 INSTALLATION:
 

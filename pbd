@@ -72,9 +72,9 @@ def prompt_station():
             if int(e[7::]) > highest:
                 highest = int(e[7::])
 
-    known_inputs = ""
+    known_inputs = []
     for e in range(0, highest + 1):
-        known_inputs += "%s) %s\n" % (e, data["station%d" % e])
+        known_inputs.append("%s) %s" % (e, data["station%d" % e]))
         
     input = pb.prompt(known_inputs, prompt="(station) ")
     return input
@@ -124,8 +124,7 @@ def pbd():
 
     # Called with no input, prompt for input
     if not input:
-        known_inputs = "\n".join([x[0] + " " for x in pb.inputs])
-        known_inputs.strip()
+        known_inputs = [(x[0] + " ").strip() for x in pb.inputs]
         input = pb.prompt(known_inputs, delay=0)
     elif input[0] == '-' and input not in ["-", "--"]:
         show_no_dash_args()

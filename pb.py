@@ -52,16 +52,14 @@ def display(input, heading="", timeout=DEFAULT_TIMEOUT):
         os.system(string)
 
 def prompt(known_inputs, prompt="", delay=0.5):
+    import dmenu
     import subprocess
     import time
     time.sleep(delay)
-    # triple quotes won't work here.  If the quotes aren't escaped, they
-    # don't function properly.
     (BLACK, GREEN) = ("#000000", "#00EE00")
-    string = "dmenu -b "
-    string += "-nb \"%s\" -nf \"%s\" " % (BLACK, GREEN)
-    string += "-sb \"%s\" -sf \"%s\" " % (GREEN, BLACK)
-    string += "-p \"pbd: %s\" <<< \"%s\"" % (prompt, known_inputs)
-    input = subprocess.check_output(string, shell=True).strip()
+    input = dmenu.show(known_inputs, bottom=True,
+                       prompt="pbd: {}".format(prompt),
+                       foreground=GREEN, background=BLACK,
+                       background_selected=BLACK, foreground_selected=GREEN)
     return input
 
