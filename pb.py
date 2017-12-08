@@ -1,23 +1,29 @@
-## This file is part of pbd.
-##
-## Copyright (c) 2011 Dustan Bower.
-##
-## pbd is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 2 of the License, or
-## (at your option) any later version.
-##
-## pbd is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with pbd.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of pbd.
+#
+# Copyright (c) 2011 Dustan Bower.
+#
+# pbd is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# pbd is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with pbd.  If not, see <http://www.gnu.org/licenses/>.
+
+import os
+import textwrap
+import time
+
+import dmenu
 
 DEFAULT_TIMEOUT = 5000
 
-inputs = (
+INPUTS = (
     ('?', 'show current song'),
     ('e', 'explain why this song is playing'),
     ('n', 'next song'),
@@ -30,16 +36,14 @@ inputs = (
     (':help', 'Show help message')
 )
 
-def display(input, heading="", timeout=DEFAULT_TIMEOUT):
-    import os
-    import textwrap
 
+def display(text, heading="", timeout=DEFAULT_TIMEOUT):
     max_line_length = int(os.environ.get('PBD_MAX_LINE_LEN', 0))
 
     if max_line_length:
-        lines = textwrap.wrap(input, max_line_length)
+        lines = textwrap.wrap(text, max_line_length)
     else:
-        lines = [input]
+        lines = [text]
 
     for line in lines:
         string = "notify-send "
@@ -51,15 +55,13 @@ def display(input, heading="", timeout=DEFAULT_TIMEOUT):
         string += "\"%s\"" % str(line.replace('&', 'and'))
         os.system(string)
 
-def prompt(known_inputs, prompt="", delay=0.5):
-    import dmenu
-    import subprocess
-    import time
+
+def prompt(known_inputs, display_prompt="", delay=0.5):
     time.sleep(delay)
     (BLACK, GREEN) = ("#000000", "#00EE00")
-    input = dmenu.show(known_inputs, bottom=True,
-                       prompt="pbd: {}".format(prompt),
-                       foreground=GREEN, background=BLACK,
-                       background_selected=BLACK, foreground_selected=GREEN)
-    return input
-
+    selection = dmenu.show(known_inputs, bottom=True,
+                           prompt="pbd: {}".format(display_prompt),
+                           foreground=GREEN, background=BLACK,
+                           background_selected=BLACK,
+                           foreground_selected=GREEN)
+    return selection

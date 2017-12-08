@@ -1,21 +1,21 @@
 #!/usr/bin/env python2
 
-## This file is part of pbd.
-##
-## Copyright (c) 2011 Dustan Bower.
-##
-## pbd is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 2 of the License, or
-## (at your option) any later version.
-##
-## pbd is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with pbd.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of pbd.
+#
+# Copyright (c) 2011 Dustan Bower.
+#
+# pbd is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# pbd is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with pbd.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import subprocess
@@ -23,21 +23,23 @@ import sys
 
 import pb
 
+
 def check_running():
     try:
-        pid = subprocess.check_output("pgrep pianobar", shell=True)
+        _ = subprocess.check_output("pgrep pianobar", shell=True)
     except subprocess.CalledProcessError:
         startup()
         return False
 
     return True
 
+
 def startup():
     process = subprocess.Popen(['pianobar'],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
-    file = open("/tmp/pbd.tmp", 'w')
-    file.close()
+    f = open("/tmp/pbd.tmp", 'w')
+    f.close()
     pb.display("And we go...")
     while True:
         output = process.stdout.readline()
@@ -45,20 +47,23 @@ def startup():
             break
         process_pianobar_output(output)
 
+
 def process_pianobar_output(output):
     display = ["Based on what", "Network error:", "Error:"]
     for message in display:
         substr = output.find(message)
         if substr != -1:
             pb.display(output[substr:])
-        
+
+
 def load_data():
-    file = open("/tmp/pbd.tmp", 'r')
-    input = file.read()
-    file.close()
-    data = dict([x.split('=', 1) for x in input.split('\n') if x])
+    f = open("/tmp/pbd.tmp", 'r')
+    user_input = f.read()
+    f.close()
+    data = dict([x.split('=', 1) for x in user_input.split('\n') if x])
     return data
-    
+
+
 def prompt_station():
     import re
 
@@ -76,23 +81,25 @@ def prompt_station():
     for e in range(0, highest + 1):
         known_inputs.append("%s) %s" % (e, data["station%d" % e]))
         
-    input = pb.prompt(known_inputs, prompt="(station) ")
-    return input
+    user_input = pb.prompt(known_inputs, display_prompt="(station) ")
+    return user_input
+
 
 def show_no_dash_args():
     """
     Called from the command line with -h or --help.
 
     """
-    #FIXME: make pb.display() take an end= parameter to allow multiple
-    #FIXME: strings to be sent and concatenated until the normal end=
-    #FIXME: is received.
+    # FIXME: make pb.display() take an end= parameter to allow multiple
+    # FIXME: strings to be sent and concatenated until the normal end=
+    # FIXME: is received.
     string = """To avoid confusion with - and accidentally disliking songs, \
 pbd does not support options beginning with \"-\".  Options \
 are prefixed with : instead.
 Showing 'pbd :help'."""
     pb.display(string, timeout=10000)
     show_help()
+
 
 def show_help():
     """
@@ -101,10 +108,10 @@ def show_help():
     
     string = ""
     option = False
-    for e in pb.inputs:
-        seperator = ": " if e[0][0] != ":" else "     "
-        new_line =  "%s%s%s\n" % (e[0], seperator, e[1])
-        # Seperate options by linefeed.
+    for e in pb.INPUTS:
+        separator = ": " if e[0][0] != ":" else "     "
+        new_line = "%s%s%s\n" % (e[0], separator, e[1])
+        # Separate options by linefeed.
         if new_line[0] == ":":
             if not option:
                 option = True
@@ -113,51 +120,52 @@ def show_help():
 
     pb.display(string, timeout=10000)
 
+
 def pbd():
     if not check_running():
         return
 
     try:
-        input = sys.argv[1].strip()
+        user_input = sys.argv[1].strip()
     except IndexError:
-        input = None
+        user_input = None
 
     # Called with no input, prompt for input
-    if not input:
-        known_inputs = [(x[0] + " ").strip() for x in pb.inputs]
-        input = pb.prompt(known_inputs, delay=0)
-    elif input[0] == '-' and input not in ["-", "--"]:
+    if not user_input:
+        known_inputs = [(x[0] + " ").strip() for x in pb.INPUTS]
+        user_input = pb.prompt(known_inputs, delay=0)
+    elif user_input[0] == '-' and user_input not in ["-", "--"]:
         show_no_dash_args()
         return
 
     # drop unimplemented inputs to avoid unresponsiveness
     unimplemented = ['b', 'c', 'd', 'g', 'h', 'j', 'm', 'r', 'u', 'x']
 
-    if input in unimplemented:
+    if user_input in unimplemented:
         return
-    if input == "s":
-        input = ":station"
-    elif input[0] == "s":
+    if user_input == "s":
+        user_input = ":station"
+    elif user_input[0] == "s":
         import re
         regex = re.compile(r"s[0-9]")
-        if regex.match(input):
-            os.system("echo '%s' > ~/.config/pianobar/ctl" % input+'\n')
+        if regex.match(user_input):
+            os.system("echo '%s' > ~/.config/pianobar/ctl" % user_input+'\n')
         return
         
     try:
-        initial_character = input[0]
+        initial_character = user_input[0]
     except IndexError:
-        initial_character = input = "?"
+        initial_character = user_input = "?"
 
     if initial_character not in [':', '?']:
-        if input == "q":
+        if user_input == "q":
             pb.display("Our steps so silent...")
-        os.system("echo -n '%s' > ~/.config/pianobar/ctl" % input)
+        os.system("echo -n '%s' > ~/.config/pianobar/ctl" % user_input)
     elif initial_character == ":":
         # parse args
-        if input == ":help":
+        if user_input == ":help":
             show_help()
-        if input == ":station":
+        if user_input == ":station":
             station_number = None
             station = prompt_station()
             try:
@@ -171,13 +179,14 @@ def pbd():
     else:
         data = load_data()
         try:
-            argument = input[1::]
+            argument = user_input[1::]
         except IndexError:
             argument = None
 
         if not argument or initial_character == "?":
             pb.display("%s - %s" % (data['artist'], data['title']),
                        heading="[%s]" % data['stationName'])
+
 
 if __name__ == "__main__":
     pbd()
