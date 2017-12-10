@@ -32,10 +32,14 @@ $ mkfifo ~/.config/pianobar/ctl
 .config/pianobar/config should contain:
 user = <your user name>
 password = <your password>
-autostart_station = <pick one (this may change)>
-event_command = <location of pbevent script*>
+autostart_station = <station id₁ of station to autostart>
+event_command = <location of pbevent script₂>
 
-* (should be /usr/bin/pbevent or /usr/local/bin/pbevent)
+₁ You can see the station id by selecting a station in pianobar.  When you do,
+    you'll see the station id in parens beside the station name.  Copy paste
+    that id into the autostart_station entry.
+₂ (should be /usr/bin/pbevent or /usr/local/bin/pbevent)
+
 
 INSTALLATION:
 
