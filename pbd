@@ -18,6 +18,7 @@
 # along with pbd.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import re
 import subprocess
 import sys
 
@@ -25,6 +26,13 @@ import pb
 
 
 def check_running():
+    """
+    Check to see if we're already running.
+
+    :return: None
+
+    """
+
     try:
         _ = subprocess.check_output("pgrep pianobar", shell=True)
     except subprocess.CalledProcessError:
@@ -35,9 +43,19 @@ def check_running():
 
 
 def startup():
+    """
+    Start up pianobar and listen for events.
+
+    :return: None
+
+    """
+
     process = subprocess.Popen(['pianobar'],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
+
+    # if necessary, create the tempfile we use to receive information from
+    # pianobar
     f = open("/tmp/pbd.tmp", 'w')
     f.close()
     pb.display("And we go...")
@@ -49,37 +67,56 @@ def startup():
 
 
 def process_pianobar_output(output):
+    """
+    Process pianobar output and relay it if necessary.  If we have an error,
+    we need to notify the user of it.
+
+    :param output: pianobar output
+    :return: None
+
+    """
+
     display = ["Based on what", "Network error:", "Error:"]
     for message in display:
-        substr = output.find(message)
-        if substr != -1:
-            pb.display(output[substr:])
+        substring = output.find(message)
+        if substring != -1:
+            pb.display(output[substring:])
 
 
 def load_data():
+    """
+    read data from pianobar
+
+    :return: None
+    """
+
     f = open("/tmp/pbd.tmp", 'r')
     user_input = f.read()
     f.close()
-    data = dict([x.split('=', 1) for x in user_input.split('\n') if x])
-    return data
+    return pb.datadict(user_input)
 
 
 def prompt_station():
-    import re
+    """
+    prompt user for station
+
+    :return: None
+    """
 
     stations = []
     highest = 0
     regex = re.compile(r"station[0-9]")
     data = load_data()
-    for e in data.keys():
-        if regex.match(e):
-            stations.append(e)
-            if int(e[7::]) > highest:
-                highest = int(e[7::])
+    for key in data.keys():
+        if regex.match(key):
+            stations.append(key)
+            # slice after the 'station' in the input: 'station11' -> '11'
+            if int(key[7::]) > highest:
+                highest = int(key[7::])
 
     known_inputs = []
-    for e in range(0, highest + 1):
-        known_inputs.append("%s) %s" % (e, data["station%d" % e]))
+    for station in range(0, highest + 1):
+        known_inputs.append("%s) %s" % (station, data["station%d" % station]))
         
     user_input = pb.prompt(known_inputs, display_prompt="(station) ")
     return user_input
@@ -88,6 +125,8 @@ def prompt_station():
 def show_no_dash_args():
     """
     Called from the command line with -h or --help.
+
+    :return: None
 
     """
     # FIXME: make pb.display() take an end= parameter to allow multiple
@@ -103,14 +142,20 @@ Showing 'pbd :help'."""
 
 def show_help():
     """
+    display help message
+
+    :return: None
 
     """
-    
+
     string = ""
     option = False
-    for e in pb.INPUTS:
-        separator = ": " if e[0][0] != ":" else "     "
-        new_line = "%s%s%s\n" % (e[0], separator, e[1])
+    for command, description in pb.INPUTS:
+        # give the :help input special formatting
+        separator = ": " if command[0] != ":" else "     "
+
+        new_line = "%s%s%s\n".format(command, separator, description)
+
         # Separate options by linefeed.
         if new_line[0] == ":":
             if not option:
@@ -122,6 +167,13 @@ def show_help():
 
 
 def pbd():
+    """
+    main function, called each time pbd is invoke via hotkey/etc.
+
+    :return: None
+
+    """
+
     if not check_running():
         return
 
@@ -143,24 +195,31 @@ def pbd():
 
     if user_input in unimplemented:
         return
+
+    # prompt for station if no station specified, otherwise switch to
+    # selected station
     if user_input == "s":
         user_input = ":station"
     elif user_input[0] == "s":
-        import re
         regex = re.compile(r"s[0-9]")
         if regex.match(user_input):
             os.system("echo '%s' > ~/.config/pianobar/ctl" % user_input+'\n')
         return
-        
+
+    # convert unknown commands into help commands
     try:
         initial_character = user_input[0]
     except IndexError:
         initial_character = user_input = "?"
 
+    # pass basic commands directly to pianobar
     if initial_character not in [':', '?']:
         if user_input == "q":
+            # display song lyrics on quit for no good reason
             pb.display("Our steps so silent...")
         os.system("echo -n '%s' > ~/.config/pianobar/ctl" % user_input)
+
+    # handle pbd-specific options
     elif initial_character == ":":
         # parse args
         if user_input == ":help":
@@ -183,6 +242,7 @@ def pbd():
         except IndexError:
             argument = None
 
+        # display song info by default
         if not argument or initial_character == "?":
             pb.display("%s - %s" % (data['artist'], data['title']),
                        heading="[%s]" % data['stationName'])
