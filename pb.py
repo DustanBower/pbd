@@ -88,7 +88,8 @@ def prompt(known_inputs, display_prompt="", delay=0.5):
                            prompt="pbd: {}".format(display_prompt),
                            foreground=GREEN, background=BLACK,
                            background_selected=BLACK,
-                           foreground_selected=GREEN)
+                           foreground_selected=GREEN,
+                           case_insensitive=True)
     return selection
 
 
