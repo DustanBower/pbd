@@ -21,6 +21,7 @@ import os
 import re
 import subprocess
 import sys
+from time import sleep
 
 import pb
 
@@ -62,7 +63,12 @@ def startup():
     while True:
         output = process.stdout.readline()
         if not output:
-            break
+            # if pianobar is closed, break
+            if process.return_code is not None:
+                break
+            else:
+                sleep(1)  # wait a second for new output
+                continue
         process_pianobar_output(output)
 
 
@@ -76,7 +82,7 @@ def process_pianobar_output(output):
 
     """
 
-    display = ["Based on what", "Network error:", "Error:"]
+    display = ["We're playing this track because", "Network error:", "Error:"]
     for message in display:
         substring = output.find(message)
         if substring != -1:
