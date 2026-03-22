@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # This file is part of pbd.
 #
@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with pbd.  If not, see <http://www.gnu.org/licenses/>.
 
+from contextlib import suppress
+from enum import StrEnum
 import os
 import re
 import subprocess
@@ -24,6 +26,16 @@ import sys
 from time import sleep
 
 import pb
+
+
+class InputStatus(StrEnum):
+    """
+    The status of parsing for user input, used for flow-control.
+
+    """
+    OK = "ok"
+    NEW_PROMPT = "new_prompt"
+    UNIMPLEMENTED = "unimplemented"
 
 
 def check_running():
@@ -57,18 +69,20 @@ def startup():
 
     # if necessary, create the tempfile we use to receive information from
     # pianobar
-    f = open("/tmp/pbd.tmp", 'w')
+    f = open("/tmp/pbd.tmp", 'w', encoding="utf-8")
     f.close()
-    pb.display("And we go...")
+    pb.display("Starting up...")
     while True:
-        output = process.stdout.readline()
+        if process.stdout is None:
+            raise AttributeError("process.stdout is None")
+        output = process.stdout.readline().decode("utf-8")
         if not output:
-            # if pianobar is closed, break
-            if process.return_code is not None:
+            # if pianobar is closed break
+            if process.returncode is None:
                 break
-            else:
-                sleep(1)  # wait a second for new output
-                continue
+
+            sleep(1)  # wait a second for new output
+            continue
         process_pianobar_output(output)
 
 
@@ -96,9 +110,9 @@ def load_data():
     :return: None
     """
 
-    f = open("/tmp/pbd.tmp", 'r')
-    user_input = f.read()
-    f.close()
+    with open("/tmp/pbd.tmp", "r", encoding="utf-8") as f:
+        user_input = f.read()
+
     return pb.datadict(user_input)
 
 
@@ -122,8 +136,11 @@ def prompt_station():
 
     known_inputs = []
     for station in range(0, highest + 1):
-        known_inputs.append("%s) %s" % (station, data["station%d" % station]))
-        
+        station_key: str = f"station{station}"
+        known_inputs.append(f"{station}) {data[station_key]}")
+        # known_inputs.append("%s) %s" % (station, data[station_key]))
+        # known_inputs.append("%s) %s" % (station, data["station%d" % station]))
+
     user_input = pb.prompt(known_inputs, display_prompt="(station) ")
     return user_input
 
@@ -160,7 +177,7 @@ def show_help():
         # give the :help input special formatting
         separator = ": " if command[0] != ":" else "     "
 
-        new_line = "%s%s%s\n".format(command, separator, description)
+        new_line: str = f"{command}{separator}{description}\n"
 
         # Separate options by linefeed.
         if new_line[0] == ":":
@@ -170,6 +187,131 @@ def show_help():
         string += new_line
 
     pb.display(string, timeout=10000)
+
+
+# Fetching the initial character this way over and over is
+# less efficient, but it is cleaner code than passing user_input
+# and initial_character around all the time. It's also simple
+# enough that it's unlikely to ever affect performance.
+def get_initial_character(user_input: str) -> str:
+    """
+    Grab the initial character. If there isn't one,
+    turn this into a help command instead by adding
+    `?`
+
+    """
+    try:
+        return user_input[0]
+    except IndexError:
+        return "?"
+
+
+def handle_basic_commands(user_input: str) -> bool:
+    """
+    Handle basic commands. If a basic command was found and processed,
+    return true.
+    """
+    handled: bool = False
+    initial_character: str = get_initial_character(user_input)
+    # pass basic commands directly to pianobar
+    if initial_character not in [':', '?']:
+        if user_input == "q":
+            # display song lyrics on quit for no good reason
+            pb.display("Shutting down...")
+        os.system(f"echo -n '{user_input}' > ~/.config/pianobar/ctl")
+        handled = True
+
+    return handled
+
+
+def handle_pbd_commands(user_input: str) -> bool:
+    """
+    Handle pbd-specific commands. If a command is handled this way,
+    return True.
+
+    """
+    handled: bool = False
+    initial_character: str = get_initial_character(user_input)
+    if initial_character == ":":
+        # parse args
+        if user_input == ":help":
+            show_help()
+        if user_input == ":station":
+            station_number = None
+            station = prompt_station()
+            try:
+                station_number = station.split(")", 1)[0]
+            except AttributeError:
+                pass
+            station_string = "s" + str(station_number)
+            os.system(f"echo '{station_string}' > ~/.config/pianobar/ctl")
+            handled = True
+
+    return handled
+
+
+def handle_default_commands(user_input: str) -> bool:
+    """
+    Handle commands not considered basic commands or pbd-specific.
+
+    """
+    handled: bool = False
+    data = load_data()
+    initial_character: str = get_initial_character(user_input)
+    try:
+        argument = user_input[1::]
+    except IndexError:
+        argument = None
+
+    # display song info by default
+    if not argument or initial_character == "?":
+        pb.display(pb.get_song_title_display(data),
+                   heading=pb.get_station_display(data))
+        handled = True
+
+    return handled
+
+
+def handle_input() -> dict[str, str]:
+    """
+    Handle input from user. Old way of parsing user input was a mess
+    and resulted in too high of a cyclomatic complexity, so some
+    of it has been refactored here.
+
+    """
+    user_input: str = ""
+    status: str = InputStatus.OK
+
+    with suppress(IndexError):
+        user_input: str = sys.argv[1].strip()
+
+    if not user_input:
+        known_inputs: list[str] = [(x[0] + " ").strip() for x in pb.INPUTS]
+        user_input = pb.prompt(known_inputs, delay=0)
+
+    # Called with no input, prompt for input
+    if user_input and user_input[0] == '-' and user_input not in ["-", "--"]:
+        show_no_dash_args()
+        status = InputStatus.NEW_PROMPT
+
+    if user_input in pb.UNIMPLEMENTED_COMMANDS:
+        status = InputStatus.UNIMPLEMENTED
+
+    # prompt for station if no station specified, otherwise switch to
+    # selected station
+    if user_input == "s":
+        user_input = ":station"
+    elif user_input[0] == "s":
+        regex = re.compile(r"s[0-9]")
+        if regex.match(user_input):
+            handled_input: str = user_input + '\n'
+            os.system(f"echo '{handled_input}' > ~/.config/pianobar/ctl")
+        status = InputStatus.NEW_PROMPT
+
+    return {
+        'user_input': user_input,
+        'status': status,
+    }
 
 
 def pbd():
@@ -183,75 +325,20 @@ def pbd():
     if not check_running():
         return
 
-    try:
-        user_input = sys.argv[1].strip()
-    except IndexError:
-        user_input = None
+    parsed_input = handle_input()
+    status: str = parsed_input['status']
 
-    # Called with no input, prompt for input
-    if not user_input:
-        known_inputs = [(x[0] + " ").strip() for x in pb.INPUTS]
-        user_input = pb.prompt(known_inputs, delay=0)
-    elif user_input[0] == '-' and user_input not in ["-", "--"]:
-        show_no_dash_args()
+    if status not in [InputStatus.OK]:
         return
 
-    # drop unimplemented inputs to avoid unresponsiveness
-    unimplemented = ['b', 'c', 'd', 'g', 'h', 'j', 'm', 'r', 'u', 'x']
+    user_input: str = parsed_input['user_input']
 
-    if user_input in unimplemented:
-        return
-
-    # prompt for station if no station specified, otherwise switch to
-    # selected station
-    if user_input == "s":
-        user_input = ":station"
-    elif user_input[0] == "s":
-        regex = re.compile(r"s[0-9]")
-        if regex.match(user_input):
-            os.system("echo '%s' > ~/.config/pianobar/ctl" % user_input+'\n')
-        return
-
-    # convert unknown commands into help commands
-    try:
-        initial_character = user_input[0]
-    except IndexError:
-        initial_character = user_input = "?"
-
-    # pass basic commands directly to pianobar
-    if initial_character not in [':', '?']:
-        if user_input == "q":
-            # display song lyrics on quit for no good reason
-            pb.display("Our steps so silent...")
-        os.system("echo -n '%s' > ~/.config/pianobar/ctl" % user_input)
-
-    # handle pbd-specific options
-    elif initial_character == ":":
-        # parse args
-        if user_input == ":help":
-            show_help()
-        if user_input == ":station":
-            station_number = None
-            station = prompt_station()
-            try:
-                station_number = station.split(")", 1)[0]
-            except AttributeError:
-                pass
-            print(station, station_number)
-            os.system("echo '%s' > ~/.config/pianobar/ctl" %
-                      ("s"+str(station_number)))
-            return
+    if handle_basic_commands(user_input):
+        pass
+    elif handle_pbd_commands(user_input):
+        pass
     else:
-        data = load_data()
-        try:
-            argument = user_input[1::]
-        except IndexError:
-            argument = None
-
-        # display song info by default
-        if not argument or initial_character == "?":
-            pb.display("%s - %s" % (data['artist'], data['title']),
-                       heading="[%s]" % data['stationName'])
+        handle_default_commands(user_input)
 
 
 if __name__ == "__main__":

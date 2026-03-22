@@ -15,13 +15,44 @@
 # You should have received a copy of the GNU General Public License
 # along with pbd.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import os
 import textwrap
 import time
+import yaml
 
 import dmenu
+from platformdirs import PlatformDirs
+
+
+dirs = PlatformDirs("pbd", "pbd", ensure_exists=True)
+# load config
+dirs.user_config_path
+config_path = os.path.join(dirs.user_config_path, 'config.yml')
+with open(config_path, 'r', encoding="utf-8") as file:
+    config_file = yaml.safe_load(file)
+
+    DEBUG = config_file.get("debug")
+
+# SET UP LOGGING
+logger = logging.getLogger(__name__)
+log_path = os.path.join(dirs.user_log_dir, 'pb.log')
+logging.basicConfig(filename=log_path, encoding='utf-8', level=logging.DEBUG)
+
 
 DEFAULT_TIMEOUT = 5000
+UNIMPLEMENTED_COMMANDS: list[str] = [
+    'b',
+    'c',
+    'd',
+    'g',
+    'h',
+    'j',
+    'm',
+    'r',
+    'u',
+    'x'
+]
 
 INPUTS = (
     ('?', 'show current song'),
@@ -43,7 +74,7 @@ def display(text, heading="", timeout=DEFAULT_TIMEOUT):
 
     :param text: text to display
     :param heading: additional information to show the user (e.g., station)
-    :param timeout: default period notification should be visible for
+    :param timeout: time in ms that notification should be visible for
     :return: None
 
     """
@@ -60,15 +91,35 @@ def display(text, heading="", timeout=DEFAULT_TIMEOUT):
     for line in lines:
         string = "notify-send "
         if timeout:
-            string += "-t %d " % timeout
-        string += "\"pbd: %s\" " % heading
+            string += f"-t {timeout} "
+        string += f"\"pbd: {heading}\" "
         # Against all reason, & refuses to print, quoted or otherwise.
         # replacing it for now.
-        string += "\"%s\"" % str(line.replace('&', 'and'))
+        string += f"\"{str(line.replace('&', 'and'))}\""
         os.system(string)
 
 
-def prompt(known_inputs, display_prompt="", delay=0.5):
+def get_song_title_display(data):
+    """
+    Get the display form of the song title.
+
+    """
+    return f"{data['artist']} - {data['title']}"
+
+
+def get_station_display(data):
+    """
+    Get the display form of the station.
+
+    """
+    return f"[{data['stationName']}]"
+
+
+def prompt(
+    known_inputs: list[str],
+    display_prompt: str = "",
+    delay: float = 0.5
+) -> str:
     """
     prompt user for input by loading dmenu
 
@@ -85,12 +136,16 @@ def prompt(known_inputs, display_prompt="", delay=0.5):
     time.sleep(delay)
     (BLACK, GREEN) = ("#000000", "#00EE00")
     selection = dmenu.show(known_inputs, bottom=True,
-                           prompt="pbd: {}".format(display_prompt),
+                           prompt=f"pbd: {display_prompt}",
                            foreground=GREEN, background=BLACK,
                            background_selected=BLACK,
                            foreground_selected=GREEN,
                            case_insensitive=True)
-    return selection
+
+    if isinstance(selection, str):
+        return selection
+
+    return ""
 
 
 def datadict(data):
@@ -103,4 +158,20 @@ def datadict(data):
                     (e.g., {'blah': 1, 'blah': 2})
 
     """
+
+    # This function should be able to handle whatever text is in
+    # /tmp/pbd.tmp. Verify that is the case if DEBUG is true.
+
+    if DEBUG:
+        data_split = data.split('\n')
+        logger.debug("pb datadict> split: %s\n", data_split)
+        logger.debug("datadict:")
+        for i in range(len(data_split)):
+            logger.debug("#%s: %s", i, data_split[i])
+            try:
+                dict([data_split[i].split('=', 1)])
+            except Exception:
+                logger.debug("LINE %s FAILED: %s", i, data_split[i])
+
+    dict([line.split('=', 1) for line in data.split('\n') if line])
     return dict([line.split('=', 1) for line in data.split('\n') if line])

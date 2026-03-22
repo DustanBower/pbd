@@ -1,9 +1,9 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 from distutils.core import setup
 
 setup(name='pbd',
-      version='0.1.3',
+      version='0.2.0',
       description='Scripts for daemonizing pianobar.',
       author='Dustan Bower',
       author_email='dustan.bower@gmail.com',

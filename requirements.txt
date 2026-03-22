@@ -1,1 +1,3 @@
-dmenu
+dmenu==0.2.1
+platformdirs==4.9.4
+PyYAML==6.0.3

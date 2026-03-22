@@ -131,4 +131,15 @@ On my system, this will fix the problem for exactly 21 messages.
 Or you can just delete notification-daemon and install xfce4-notifyd or statnot.
 
 
+pbd now will read a config file to determine if it should provide debugging information
+
+On my system, this file is:
+    ~/.config/pbd/.config.yml
+
+Putting "debug: true" into this file will cause pbd to store logs files when it runs
+
+On my machine, these files are located in
+    ~/.local/state/pbd/log/
+
+    The log files themselves are pb.log and pbevent.log
 
