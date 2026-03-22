@@ -77,7 +77,7 @@ def startup():
             raise AttributeError("process.stdout is None")
         output = process.stdout.readline().decode("utf-8")
         if not output:
-            # if pianobar is closed break
+            # if pianobar is closed, break
             if process.returncode is None:
                 break
 
@@ -138,8 +138,6 @@ def prompt_station():
     for station in range(0, highest + 1):
         station_key: str = f"station{station}"
         known_inputs.append(f"{station}) {data[station_key]}")
-        # known_inputs.append("%s) %s" % (station, data[station_key]))
-        # known_inputs.append("%s) %s" % (station, data["station%d" % station]))
 
     user_input = pb.prompt(known_inputs, display_prompt="(station) ")
     return user_input
