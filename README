@@ -1,4 +1,4 @@
-pbd is a small set of scripts for daemonizing pianobar.
+pbd is a small set of scripts for listening to pandora.com without a browser by running pianobar in the background.
 
 pbd requires:
 
@@ -43,20 +43,9 @@ event_command = <location of pbevent script₂>
 
 INSTALLATION:
 
-with root permissions:
+in the same directory as setup.py:
 
-MAKE SURE TO USE PYTHON2
-
-<python 2.x> setup.py install
-
-on most systems, that will be:
-
-python setup.py install
-
-on arch:
-
-python2 setup.py install
-
+pip install .
 
 
 USAGE:
